@@ -57,15 +57,9 @@ body {
 .slide .bg { inset: -24px; width: calc(100% + 48px); height: calc(100% + 48px); object-fit: cover; filter: blur(18px) brightness(.75); }
 .slide .fg { inset: 0; width: 100%; height: 100%; object-fit: contain; animation: kenburns 4.6s ease-out both; }
 /* chuyển ảnh hình trái tim: ảnh mới lộ ra qua một trái tim đập rồi nở rộng */
-/* trái tim được vẽ từng khung hình bằng JS (clip-path: path), chạy được cả trên iPhone */
-.slide.in-heart { z-index: 2; }
+/* ảnh mới được vẽ trong một SVG cắt hình trái tim (SVG clipPath chạy được trên mọi iPhone) */
 .slide.out-heart { animation: outHeart 1.6s ease both; }
-.heart-glow {
-  position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  width: 100%; height: 100%; overflow: visible;
-  filter: drop-shadow(0 0 6px rgba(255,212,121,.9)) drop-shadow(0 0 14px rgba(255,111,145,.8));
-}
-.heart-glow path { fill: none; stroke: var(--gold); stroke-width: 3; }
+.heart-svg { position: absolute; inset: 0; z-index: 3; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 @keyframes kenburns { from { transform: scale(1.12); } to { transform: scale(1); } }
 @keyframes outHeart { to { transform: scale(.94); filter: brightness(.55) blur(3px); } }
 .dots { display: flex; gap: 6px; align-items: center; }
@@ -723,9 +717,9 @@ body {
     const next = makeSlide(list[photoIdx]), box = $("slides");
     if (current) {
       const old = current;
-      old.className = "slide out-heart"; next.className = "slide in-heart";
-      box.append(next);
-      heartReveal(box, next, () => { old.remove(); next.className = "slide"; });
+      old.className = "slide out-heart";
+      // ảnh thật chỉ được thêm vào khi trái tim đã nở kín khung
+      heartReveal(box, list[photoIdx], () => { if (!showing()) return; box.append(next); old.remove(); });
       // pháo hình trái tim nổ giữa khung đúng nhịp tim đập
       const r = box.getBoundingClientRect();
       setTimeout(() => explode((r.left + r.right) / 2, (r.top + r.bottom) / 2, "#ff6f91", 0), 650);
@@ -753,28 +747,44 @@ body {
     }
     return HEARTBEAT[HEARTBEAT.length - 1][1];
   }
-  function heartReveal(box, slide, done) {
-    const w = box.clientWidth, h = box.clientHeight, cx = w / 2, cy = h / 2;
-    if (reduced) { done(); return; }
-    const glow = document.createElementNS(NS, "svg");
-    glow.setAttribute("class", "heart-glow");
-    glow.setAttribute("viewBox", `0 0 ${w} ${h}`);
-    const gp = document.createElementNS(NS, "path"); glow.append(gp); box.append(glow);
+  let heartSeq = 0;
+  const XLINK = "http://www.w3.org/1999/xlink";
+  const svgEl = (tag, attrs, parent) => { const n = el(tag, attrs, parent); return n; };
+  function svgImage(src, attrs, parent) {
+    const im = svgEl("image", attrs, parent);
+    im.setAttribute("href", src); im.setAttributeNS(XLINK, "xlink:href", src); // Safari cũ chỉ đọc xlink:href
+    return im;
+  }
+  function heartReveal(box, src, done) {
+    const w = box.clientWidth, h = box.clientHeight, cx = w / 2, cy = h / 2, id = "hc" + (++heartSeq);
+    const svg = svgEl("svg", { class: "heart-svg", viewBox: `0 0 ${w} ${h}`, "aria-hidden": "true" });
+    const defs = svgEl("defs", {}, svg);
+    const clip = svgEl("clipPath", { id }, defs);
+    const cp = svgEl("path", {}, clip);
+    const blur = svgEl("filter", { id: id + "b", x: "-10%", y: "-10%", width: "120%", height: "120%" }, defs);
+    svgEl("feGaussianBlur", { stdDeviation: 14 }, blur);
+    // ảnh mới: nền mờ phủ kín + ảnh rõ ở giữa, giống hệt khung ảnh thật
+    const g = svgEl("g", { "clip-path": `url(#${id})` }, svg);
+    svgEl("rect", { width: w, height: h, fill: "#2c1235" }, g);
+    svgImage(src, { x: -24, y: -24, width: w + 48, height: h + 48, preserveAspectRatio: "xMidYMid slice", filter: `url(#${id}b)`, opacity: 0.75 }, g);
+    svgImage(src, { width: w, height: h, preserveAspectRatio: "xMidYMid meet", transform: `translate(${cx} ${cy}) scale(1.12) translate(${-cx} ${-cy})` }, g);
+    // viền trái tim phát sáng
+    const halo = svgEl("path", { fill: "none", stroke: "#ff6f91", "stroke-width": 10, "stroke-opacity": 0.35 }, svg);
+    const line = svgEl("path", { fill: "none", stroke: "#ffd479", "stroke-width": 3 }, svg);
+    box.append(svg);
+
     const DUR = 1600, t0 = performance.now();
     let finished = false;
-    const finish = () => {
-      if (finished) return; finished = true;
-      slide.style.clipPath = slide.style.webkitClipPath = ""; glow.remove(); done();
-    };
+    const finish = () => { if (finished) return; finished = true; done(); svg.remove(); };
     // chốt an toàn: trình duyệt ngừng vẽ (tab ẩn, máy yếu) thì ảnh mới vẫn hiện đủ
     setTimeout(finish, DUR + 200);
     (function step(now) {
       if (finished) return;
-      const t = Math.min(1, (now - t0) / DUR);
+      const t = Math.min(1, Math.max(0, (now - t0) / DUR));
       const d = heartPath(cx, cy, (beatAt(t) * w) / 32);
-      slide.style.clipPath = slide.style.webkitClipPath = `path("${d}")`;
-      gp.setAttribute("d", d);
-      glow.style.opacity = t < 0.55 ? 1 : 1 - (t - 0.55) / 0.45;
+      cp.setAttribute("d", d); halo.setAttribute("d", d); line.setAttribute("d", d);
+      const o = t < 0.55 ? 1 : 1 - (t - 0.55) / 0.45;
+      halo.setAttribute("opacity", o); line.setAttribute("opacity", o);
       if (t < 1) requestAnimationFrame(step); else finish();
     })(t0);
   }
