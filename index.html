@@ -57,34 +57,16 @@ body {
 .slide .bg { inset: -24px; width: calc(100% + 48px); height: calc(100% + 48px); object-fit: cover; filter: blur(18px) brightness(.75); }
 .slide .fg { inset: 0; width: 100%; height: 100%; object-fit: contain; animation: kenburns 4.6s ease-out both; }
 /* chuyển ảnh hình trái tim: ảnh mới lộ ra qua một trái tim đập rồi nở rộng */
-.slide.in-heart {
-  z-index: 2;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 29'%3E%3Cpath d='M16 29C6 21 0 15 0 8.5 0 3.5 4 0 8.5 0c3.1 0 5.9 1.8 7.5 4.5C17.6 1.8 20.4 0 23.5 0 28 0 32 3.5 32 8.5 32 15 26 21 16 29z'/%3E%3C/svg%3E") center / 0% auto no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 29'%3E%3Cpath d='M16 29C6 21 0 15 0 8.5 0 3.5 4 0 8.5 0c3.1 0 5.9 1.8 7.5 4.5C17.6 1.8 20.4 0 23.5 0 28 0 32 3.5 32 8.5 32 15 26 21 16 29z'/%3E%3C/svg%3E") center / 0% auto no-repeat;
-  animation: inHeart 1.6s cubic-bezier(.5,0,.3,1) both;
-}
+/* trái tim được vẽ từng khung hình bằng JS (clip-path: path), chạy được cả trên iPhone */
+.slide.in-heart { z-index: 2; }
 .slide.out-heart { animation: outHeart 1.6s ease both; }
 .heart-glow {
   position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 34 31'%3E%3Cpath d='M16 29C6 21 0 15 0 8.5 0 3.5 4 0 8.5 0c3.1 0 5.9 1.8 7.5 4.5C17.6 1.8 20.4 0 23.5 0 28 0 32 3.5 32 8.5 32 15 26 21 16 29z' fill='none' stroke='%23ffd479' stroke-width='1.1'/%3E%3C/svg%3E") center / 0% auto no-repeat;
+  width: 100%; height: 100%; overflow: visible;
   filter: drop-shadow(0 0 6px rgba(255,212,121,.9)) drop-shadow(0 0 14px rgba(255,111,145,.8));
-  animation: glowHeart 1.6s cubic-bezier(.5,0,.3,1) both;
 }
+.heart-glow path { fill: none; stroke: var(--gold); stroke-width: 3; }
 @keyframes kenburns { from { transform: scale(1.12); } to { transform: scale(1); } }
-@keyframes inHeart {
-  0%   { -webkit-mask-size: 0% auto;   mask-size: 0% auto; }
-  35%  { -webkit-mask-size: 70% auto;  mask-size: 70% auto; }
-  45%  { -webkit-mask-size: 60% auto;  mask-size: 60% auto; }
-  55%  { -webkit-mask-size: 74% auto;  mask-size: 74% auto; }
-  100% { -webkit-mask-size: 420% auto; mask-size: 420% auto; }
-}
-@keyframes glowHeart {
-  0%   { background-size: 0% auto; opacity: 1; }
-  35%  { background-size: 70% auto; }
-  45%  { background-size: 60% auto; }
-  55%  { background-size: 74% auto; opacity: 1; }
-  100% { background-size: 420% auto; opacity: 0; }
-}
 @keyframes outHeart { to { transform: scale(.94); filter: brightness(.55) blur(3px); } }
 .dots { display: flex; gap: 6px; align-items: center; }
 .dots span { width: 8px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.35); transition: width .4s ease, background .4s ease; }
@@ -742,9 +724,8 @@ body {
     if (current) {
       const old = current;
       old.className = "slide out-heart"; next.className = "slide in-heart";
-      const glow = document.createElement("div"); glow.className = "heart-glow";
-      box.append(next, glow);
-      setTimeout(() => { old.remove(); glow.remove(); next.className = "slide"; }, 1700);
+      box.append(next);
+      heartReveal(box, next, () => { old.remove(); next.className = "slide"; });
       // pháo hình trái tim nổ giữa khung đúng nhịp tim đập
       const r = box.getBoundingClientRect();
       setTimeout(() => explode((r.left + r.right) / 2, (r.top + r.bottom) / 2, "#ff6f91", 0), 650);
@@ -752,6 +733,50 @@ body {
     } else box.append(next);
     current = next;
     renderDots();
+  }
+
+  // Trái tim (khung 32x29) co giãn quanh tâm khung ảnh: đập một nhịp rồi nở phủ kín
+  const HEART = [[16,29],[6,21],[0,15],[0,8.5],[0,3.5],[4,0],[8.5,0],[11.6,0],[14.4,1.8],[16,4.5],[17.6,1.8],[20.4,0],[23.5,0],[28,0],[32,3.5],[32,8.5],[32,15],[26,21],[16,29]];
+  function heartPath(cx, cy, k) {
+    const p = HEART.map(([x, y]) => ((cx + (x - 16) * k).toFixed(1) + " " + (cy + (y - 14.5) * k).toFixed(1)));
+    let d = "M" + p[0];
+    for (let i = 1; i < p.length; i += 3) d += " C" + p[i] + " " + p[i + 1] + " " + p[i + 2];
+    return d + " Z";
+  }
+  // độ rộng trái tim so với khung theo thời gian: lớn dần, đập, rồi nở rộng
+  const HEARTBEAT = [[0, 0], [0.35, 0.7], [0.45, 0.6], [0.55, 0.74], [1, 4.2]];
+  const ease = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+  function beatAt(t) {
+    for (let i = 1; i < HEARTBEAT.length; i++) {
+      const [t0, v0] = HEARTBEAT[i - 1], [t1, v1] = HEARTBEAT[i];
+      if (t <= t1) return v0 + (v1 - v0) * ease((t - t0) / (t1 - t0));
+    }
+    return HEARTBEAT[HEARTBEAT.length - 1][1];
+  }
+  function heartReveal(box, slide, done) {
+    const w = box.clientWidth, h = box.clientHeight, cx = w / 2, cy = h / 2;
+    if (reduced) { done(); return; }
+    const glow = document.createElementNS(NS, "svg");
+    glow.setAttribute("class", "heart-glow");
+    glow.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    const gp = document.createElementNS(NS, "path"); glow.append(gp); box.append(glow);
+    const DUR = 1600, t0 = performance.now();
+    let finished = false;
+    const finish = () => {
+      if (finished) return; finished = true;
+      slide.style.clipPath = slide.style.webkitClipPath = ""; glow.remove(); done();
+    };
+    // chốt an toàn: trình duyệt ngừng vẽ (tab ẩn, máy yếu) thì ảnh mới vẫn hiện đủ
+    setTimeout(finish, DUR + 200);
+    (function step(now) {
+      if (finished) return;
+      const t = Math.min(1, (now - t0) / DUR);
+      const d = heartPath(cx, cy, (beatAt(t) * w) / 32);
+      slide.style.clipPath = slide.style.webkitClipPath = `path("${d}")`;
+      gp.setAttribute("d", d);
+      glow.style.opacity = t < 0.55 ? 1 : 1 - (t - 0.55) / 0.45;
+      if (t < 1) requestAnimationFrame(step); else finish();
+    })(t0);
   }
   function restart() {
     clearInterval(slideTimer);
