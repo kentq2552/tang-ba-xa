@@ -249,10 +249,7 @@ body {
 @keyframes bloom { from { transform: scale(0) rotate(-40deg); opacity: 0; } }
 @keyframes sway { from { rotate: -4deg; } to { rotate: 4deg; } }
 @keyframes draw { to { stroke-dashoffset: 0; } }
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
-}
+/* Thiệp luôn chạy đủ hiệu ứng, kể cả khi máy bật "Giảm chuyển động" hoặc mở trong Messenger */
 </style>
 <canvas id="sky" aria-hidden="true"></canvas>
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -372,7 +369,7 @@ body {
   let data = JSON.parse(document.getElementById("card-data").textContent);
 
   const $ = (id) => document.getElementById(id);
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduced = false; // không tắt hiệu ứng theo cài đặt "Giảm chuyển động": hiệu ứng là phần chính của thiệp
   const PALETTE = ["#ff6f91", "#ffc2d1", "#ffd479", "#c9a7ff", "#7fe3d0", "#ff9a76"];
   const rand = (a, b) => a + Math.random() * (b - a);
   const pick = (arr) => arr[(Math.random() * arr.length) | 0];
