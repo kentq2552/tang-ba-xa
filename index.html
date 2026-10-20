@@ -1,4 +1,5 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,-apple-system,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Tặng bà xã iu</title>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Tặng bà xã iu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:ital,wght@1,600&family=Be+Vietnam+Pro:wght@300;400;600&display=swap">
 <style id="app-style">
 /* Layout: một tấm thiệp kính mờ đặt giữa bầu trời đêm tím mận, hoa rơi + pháo hoa phía sau */
@@ -55,28 +56,39 @@ body {
 .slide img { position: absolute; max-width: none; display: block; }
 .slide .bg { inset: -24px; width: calc(100% + 48px); height: calc(100% + 48px); object-fit: cover; filter: blur(18px) brightness(.75); }
 .slide .fg { inset: 0; width: 100%; height: 100%; object-fit: contain; animation: kenburns 4.6s ease-out both; }
-.slide[class*="in-"] { z-index: 2; }
-.in-fade { animation: inFade .9s ease both; }       .out-fade { animation: outFade .9s ease both; }
-.in-slide { animation: inSlide .9s cubic-bezier(.7,0,.3,1) both; } .out-slide { animation: outSlide .9s cubic-bezier(.7,0,.3,1) both; }
-.in-flip { animation: inFlip .9s ease both; }       .out-flip { animation: outFlip .9s ease both; }
-.in-circle { animation: inCircle 1s ease-in-out both; } .out-circle { animation: hold 1s both; }
-.in-up { animation: inUp .9s cubic-bezier(.2,.9,.3,1.2) both; } .out-up { animation: outUp .9s ease both; }
+/* chuyển ảnh hình trái tim: ảnh mới lộ ra qua một trái tim đập rồi nở rộng */
+.slide.in-heart {
+  z-index: 2;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 29'%3E%3Cpath d='M16 29C6 21 0 15 0 8.5 0 3.5 4 0 8.5 0c3.1 0 5.9 1.8 7.5 4.5C17.6 1.8 20.4 0 23.5 0 28 0 32 3.5 32 8.5 32 15 26 21 16 29z'/%3E%3C/svg%3E") center / 0% auto no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 29'%3E%3Cpath d='M16 29C6 21 0 15 0 8.5 0 3.5 4 0 8.5 0c3.1 0 5.9 1.8 7.5 4.5C17.6 1.8 20.4 0 23.5 0 28 0 32 3.5 32 8.5 32 15 26 21 16 29z'/%3E%3C/svg%3E") center / 0% auto no-repeat;
+  animation: inHeart 1.6s cubic-bezier(.5,0,.3,1) both;
+}
+.slide.out-heart { animation: outHeart 1.6s ease both; }
+.heart-glow {
+  position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 34 31'%3E%3Cpath d='M16 29C6 21 0 15 0 8.5 0 3.5 4 0 8.5 0c3.1 0 5.9 1.8 7.5 4.5C17.6 1.8 20.4 0 23.5 0 28 0 32 3.5 32 8.5 32 15 26 21 16 29z' fill='none' stroke='%23ffd479' stroke-width='1.1'/%3E%3C/svg%3E") center / 0% auto no-repeat;
+  filter: drop-shadow(0 0 6px rgba(255,212,121,.9)) drop-shadow(0 0 14px rgba(255,111,145,.8));
+  animation: glowHeart 1.6s cubic-bezier(.5,0,.3,1) both;
+}
 @keyframes kenburns { from { transform: scale(1.12); } to { transform: scale(1); } }
-@keyframes inFade { from { opacity: 0; transform: scale(1.15); filter: blur(10px); } }
-@keyframes outFade { to { opacity: 0; transform: scale(.9); filter: blur(6px); } }
-@keyframes inSlide { from { transform: translateX(100%); } }
-@keyframes outSlide { to { transform: translateX(-100%); } }
-@keyframes inFlip { from { transform: rotateY(-100deg); opacity: 0; } }
-@keyframes outFlip { to { transform: rotateY(100deg); opacity: 0; } }
-@keyframes inCircle { from { clip-path: circle(0% at 50% 50%); } to { clip-path: circle(80% at 50% 50%); } }
-@keyframes hold { to { opacity: 1; } }
-@keyframes inUp { from { transform: translateY(100%) rotate(6deg); } }
-@keyframes outUp { to { transform: translateY(-25%) scale(.85); opacity: 0; } }
-.slide-nav { display: flex; align-items: center; gap: 12px; }
+@keyframes inHeart {
+  0%   { -webkit-mask-size: 0% auto;   mask-size: 0% auto; }
+  35%  { -webkit-mask-size: 70% auto;  mask-size: 70% auto; }
+  45%  { -webkit-mask-size: 60% auto;  mask-size: 60% auto; }
+  55%  { -webkit-mask-size: 74% auto;  mask-size: 74% auto; }
+  100% { -webkit-mask-size: 420% auto; mask-size: 420% auto; }
+}
+@keyframes glowHeart {
+  0%   { background-size: 0% auto; opacity: 1; }
+  35%  { background-size: 70% auto; }
+  45%  { background-size: 60% auto; }
+  55%  { background-size: 74% auto; opacity: 1; }
+  100% { background-size: 420% auto; opacity: 0; }
+}
+@keyframes outHeart { to { transform: scale(.94); filter: brightness(.55) blur(3px); } }
 .dots { display: flex; gap: 6px; align-items: center; }
-.dots button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px; background: rgba(255,255,255,.35); cursor: pointer; transition: width .3s ease, background .3s ease; }
-.dots button[aria-current="true"] { width: 22px; background: var(--gold); }
-.dots button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.dots span { width: 8px; height: 8px; border-radius: 4px; background: rgba(255,255,255,.35); transition: width .4s ease, background .4s ease; }
+.dots span.on { width: 22px; background: var(--gold); }
 .photo-frame figcaption { font-family: var(--f-script); font-size: 30px; color: #c43d66; text-align: center; margin-top: 6px; }
 .photo-list { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; }
 .photo-list figure { margin: 0; position: relative; width: 72px; height: 72px; }
@@ -350,11 +362,7 @@ body {
 
   <div id="photoShow" hidden="" role="dialog" aria-modal="true" aria-label="Ảnh kỷ niệm">
     <figure class="photo-frame"><div class="slides" id="slides"></div><figcaption id="photoCap"></figcaption></figure>
-    <div class="slide-nav">
-      <button class="chip" id="photoPrev" type="button" aria-label="Ảnh trước">‹</button>
-      <div class="dots" id="photoDots"></div>
-      <button class="chip" id="photoNext" type="button" aria-label="Ảnh sau">›</button>
-    </div>
+    <div class="dots" id="photoDots" aria-hidden="true"></div>
     <button class="chip" id="photoClose" type="button">Đóng ảnh</button>
   </div>
 </main>
@@ -680,6 +688,8 @@ body {
     for (let i = 0; i < 40; i++) petals.push(newPetal(rand(0, W), rand(-60, 0)));
     if (withSound) setTimeout(speak, 900);
     scrollTo({ top: 0, behavior: "smooth" });
+    // chữ chạy xong thì tự bắn pháo hoa và mở trình chiếu ảnh, không cần bấm nút
+    if (photos().length) setTimeout(() => { if (!showing()) volley(); }, Math.min(data.msg.length * 42 + 2500, 20000));
   }
   function openCard() {
     if (opened) return; opened = true;
@@ -693,10 +703,9 @@ body {
   $("voiceBtn").addEventListener("click", () => { render(true); speak(); });
   $("musicBtn").addEventListener("click", () => setMusic(!musicOn));
   /* ---- Bắn pháo hoa xong thì hiện ảnh ---- */
-  // bắn 1 lần: ảnh hiện ra rồi tự chuyển liên tục, mỗi lần một hiệu ứng khác
-  let photoIdx = 0, photoTimer = null, slideTimer = null, current = null, fxIdx = 0;
-  const FX = ["fade", "slide", "flip", "circle", "up"];
-  const SLIDE_MS = 4000;
+  // ảnh hiện ra rồi tự chuyển liên tục qua hiệu ứng trái tim
+  let photoIdx = 0, photoTimer = null, slideTimer = null, current = null;
+  const SLIDE_MS = 4500;
   const photos = () => (Array.isArray(data.photos) ? data.photos : []);
   const showing = () => !$("photoShow").hidden;
   function closePhoto() {
@@ -719,28 +728,29 @@ body {
   function renderDots() {
     const list = photos(), d = $("photoDots");
     d.textContent = "";
-    const many = list.length > 1;
-    $("photoPrev").hidden = $("photoNext").hidden = d.hidden = !many;
-    if (!many) return;
+    d.hidden = list.length < 2;
     list.forEach((_, i) => {
-      const b = document.createElement("button"); b.type = "button";
-      b.setAttribute("aria-label", "Ảnh " + (i + 1));
-      if (i === photoIdx) b.setAttribute("aria-current", "true");
-      b.addEventListener("click", () => { goTo(i); restart(); });
-      d.append(b);
+      const s = document.createElement("span");
+      if (i === photoIdx) s.className = "on";
+      d.append(s);
     });
   }
-  function goTo(i, effect) {
+  function goTo(i) {
     const list = photos(); if (!list.length) return;
     photoIdx = (i + list.length) % list.length;
-    const next = makeSlide(list[photoIdx]);
+    const next = makeSlide(list[photoIdx]), box = $("slides");
     if (current) {
-      const fx = effect || FX[fxIdx++ % FX.length], old = current;
-      old.className = "slide out-" + fx; next.className = "slide in-" + fx;
-      setTimeout(() => old.remove(), 1050);
+      const old = current;
+      old.className = "slide out-heart"; next.className = "slide in-heart";
+      const glow = document.createElement("div"); glow.className = "heart-glow";
+      box.append(next, glow);
+      setTimeout(() => { old.remove(); glow.remove(); next.className = "slide"; }, 1700);
+      // pháo hình trái tim nổ giữa khung đúng nhịp tim đập
+      const r = box.getBoundingClientRect();
+      setTimeout(() => explode((r.left + r.right) / 2, (r.top + r.bottom) / 2, "#ff6f91", 0), 650);
       sparkle(false);
-    }
-    $("slides").append(next); current = next;
+    } else box.append(next);
+    current = next;
     renderDots();
   }
   function restart() {
@@ -763,16 +773,9 @@ body {
     if (photos().length && !showing()) { clearTimeout(photoTimer); photoTimer = setTimeout(startShow, 1700); }
   }
   $("fireBtn").addEventListener("click", volley);
-  $("photoPrev").addEventListener("click", () => { goTo(photoIdx - 1, "slide"); restart(); });
-  $("photoNext").addEventListener("click", () => { goTo(photoIdx + 1); restart(); });
   $("photoClose").addEventListener("click", closePhoto);
   $("photoShow").addEventListener("click", (e) => { if (e.target.id === "photoShow") closePhoto(); });
-  addEventListener("keydown", (e) => {
-    if (!showing()) return;
-    if (e.key === "Escape") closePhoto();
-    else if (e.key === "ArrowRight") { goTo(photoIdx + 1); restart(); }
-    else if (e.key === "ArrowLeft") { goTo(photoIdx - 1, "slide"); restart(); }
-  });
+  addEventListener("keydown", (e) => { if (showing() && e.key === "Escape") closePhoto(); });
 
   /* ================= Sửa thiệp: chỉ người có quyền sửa ================= */
   let draftVoice = data.voice, draftVoiceName = data.voiceName || "";
